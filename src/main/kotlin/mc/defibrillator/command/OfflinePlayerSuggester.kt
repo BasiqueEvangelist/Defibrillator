@@ -11,8 +11,9 @@ import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import mc.defibrillator.DefibState
-import mc.defibrillator.OfflinePlayerCache
 import mc.defibrillator.exception.InvalidArgument
+import me.basiqueevangelist.nevseti.OfflineDataCache
+import me.basiqueevangelist.nevseti.OfflineNameCache
 import net.minecraft.command.CommandSource
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.NbtIo
@@ -28,9 +29,10 @@ class OfflinePlayerSuggester : SuggestionProvider<ServerCommandSource> {
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
         if (context.source is CommandSource) {
-            OfflinePlayerCache.filterByOnline((context.source as CommandSource).playerNames)
             return CommandSource.suggestMatching(
-                OfflinePlayerCache.getOfflinePlayerNames((context.source as CommandSource).playerNames),
+                OfflineDataCache.INSTANCE.players.keys
+                    .filter { context.source.minecraftServer.playerManager.getPlayer(it) == null }
+                    .map { OfflineNameCache.INSTANCE.getNameFromUUID(it) },
                 builder,
             )
         }
@@ -40,10 +42,10 @@ class OfflinePlayerSuggester : SuggestionProvider<ServerCommandSource> {
     companion object {
         fun getPlayerData(context: CommandContext<ServerCommandSource>, name: String): CompoundTag {
             val providedName = context.getArgument(name, String::class.java)
-            val uuid = OfflinePlayerCache.getByName(providedName)
+            val uuid = OfflineNameCache.INSTANCE.getUUIDFromName(providedName)
 
             val file = DefibState.serverInstance.getSavePath(WorldSavePath.PLAYERDATA).toFile()
-                .resolve(OfflinePlayerCache.getByName(providedName).toString() + ".dat")
+                .resolve("$uuid.dat")
 
             if (!file.exists()) {
                 generateError(context, "No .dat file associated with that uuid! ($uuid)")

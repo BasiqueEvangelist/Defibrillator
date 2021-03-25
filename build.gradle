@@ -19,10 +19,6 @@ repositories {
     mavenCentral()
 }
 
-minecraft {
-    accessWidener =  file("src/main/resources/defib.aw")
-}
-
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -43,9 +39,8 @@ dependencies {
     modImplementation 'com.github.P03W:Microconfig:2.0.0'
     include 'com.github.P03W:Microconfig:2.0.0'
 
-    // Fuel
-    implementation 'com.github.kittinunf.fuel:fuel:2.3.1'
-    implementation 'com.github.kittinunf.fuel:fuel-json:2.3.1'
+    // Ne v seti
+    modImplementation include('com.github.BasiqueEvangelist:ne-v-seti:0.1.1')
 }
 
 // Licenser
